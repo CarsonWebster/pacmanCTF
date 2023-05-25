@@ -191,10 +191,24 @@ class OffensiveFeatureAgent(InitialFeatureAgent):
                               for food in foodList])
             features['distanceToFood'] = minDistance
 
+        # Computes distance to invaders we can see.
+        enemies = [successor.getAgentState(i)
+                   for i in self.getOpponents(successor)]
+        invaders = [a for a in enemies if a.isPacman(
+        ) and a.getPosition() is not None]
+        features['numInvaders'] = len(invaders)
+
+        if (len(invaders) > 0):
+            dists = [self.getMazeDistance(
+                myPos, a.getPosition()) for a in invaders]
+            features['invaderDistance'] = min(dists)
+
         return features
 
     def getWeights(self, gameState, action):
         return {
             'successorScore': 100,
-            'distanceToFood': -1
+            'distanceToFood': -1,
+            'numInvaders': -1000,
+            'invaderDistance': -10,
         }
