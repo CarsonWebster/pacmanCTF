@@ -134,6 +134,12 @@ class DefensiveFeatureAgent(InitialFeatureAgent):
         if (myState.isPacman()):
             features['onDefense'] = 0
 
+        # team = [successor.getAgentState(i)
+        #         for i in self.getTeam(successor)]
+        # teamDistance = self.getMazeDistance(
+        #     team[0].getPosition(), team[1].getPosition())
+        # features['teamDistance'] = teamDistance
+
         # Computes distance to invaders we can see.
         enemies = [successor.getAgentState(i)
                    for i in self.getOpponents(successor)]
@@ -162,7 +168,8 @@ class DefensiveFeatureAgent(InitialFeatureAgent):
             'onDefense': 100,
             'invaderDistance': -10,
             'stop': -100,
-            'reverse': -2
+            'reverse': -2,
+            # 'teamDistance': 5,
         }
 
 
@@ -191,6 +198,12 @@ class OffensiveFeatureAgent(InitialFeatureAgent):
                               for food in foodList])
             features['distanceToFood'] = minDistance
 
+        # team = [successor.getAgentState(i)
+        #         for i in self.getTeam(successor)]
+        # teamDistance = self.getMazeDistance(
+        #     team[0].getPosition(), team[1].getPosition())
+        # features['teamDistance'] = teamDistance
+
         # Computes distance to invaders we can see.
         enemies = [successor.getAgentState(i)
                    for i in self.getOpponents(successor)]
@@ -199,9 +212,27 @@ class OffensiveFeatureAgent(InitialFeatureAgent):
         features['numInvaders'] = len(invaders)
 
         if (len(invaders) > 0):
-            dists = [self.getMazeDistance(
+            invaderDists = [self.getMazeDistance(
                 myPos, a.getPosition()) for a in invaders]
-            features['invaderDistance'] = min(dists)
+            features['invaderDistance'] = min(invaderDists)
+
+        # If the defender is within 3 units of distance, run back to defense
+        enemyDefenders = [a for a in enemies if not a.isPacman()]
+        if (len(enemyDefenders) > 0):
+            enemyDefenderDistances = [self.getMazeDistance(
+                myPos, a.getPosition()) for a in enemyDefenders]
+            enemyDefenderDistances = [
+                a for a in enemyDefenderDistances if (a < 4)]
+            if enemyDefenderDistances:
+                features['enemyDefenderDistance'] = min(enemyDefenderDistances)
+
+        scaredEnemies = [a for a in enemies if a._scaredTimer > 3]
+        if (len(scaredEnemies) > 0):
+            scaredDists = [self.getMazeDistance(myPos, a.getPosition())
+                           for a in scaredEnemies]
+            features['scaredEnemiesDistance'] = min(scaredDists)
+            features['enemyDefenderDistance'] = 0
+        features['numScaredEnemies'] = len(scaredEnemies)
 
         return features
 
@@ -209,6 +240,10 @@ class OffensiveFeatureAgent(InitialFeatureAgent):
         return {
             'successorScore': 100,
             'distanceToFood': -1,
-            'numInvaders': -1000,
+            'numInvaders': -100,
             'invaderDistance': -10,
+            'numScaredEnemies': 1000,
+            'scaredEnemiesDistance': -50,
+            # 'teamDistance': 5,
+            'enemyDefenderDistance': 100,
         }
