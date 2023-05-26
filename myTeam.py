@@ -85,6 +85,8 @@ class InitialFeatureAgent(CaptureAgent):
         stateEval = sum(features[feature] * weights[feature]
                         for feature in features)
 
+        print(stateEval)
+
         return stateEval
 
     def getFeatures(self, gameState, action):
@@ -222,17 +224,26 @@ class OffensiveFeatureAgent(InitialFeatureAgent):
             enemyDefenderDistances = [self.getMazeDistance(
                 myPos, a.getPosition()) for a in enemyDefenders]
             enemyDefenderDistances = [
-                a for a in enemyDefenderDistances if (a < 4)]
+                a for a in enemyDefenderDistances]
             if enemyDefenderDistances:
-                features['enemyDefenderDistance'] = min(enemyDefenderDistances)
+                features['enemyDefenderDistance'] = (
+                    1 / min(enemyDefenderDistances))
 
         scaredEnemies = [a for a in enemies if a._scaredTimer > 3]
         if (len(scaredEnemies) > 0):
             scaredDists = [self.getMazeDistance(myPos, a.getPosition())
                            for a in scaredEnemies]
             features['scaredEnemiesDistance'] = min(scaredDists)
-            features['enemyDefenderDistance'] = 0
-        features['numScaredEnemies'] = len(scaredEnemies)
+            if min(scaredDists) == 0:
+                features['scaredEnemyEatten'] = 1
+            features['enemyDefenderDistance'] = -10
+            features['enemiesAreScared'] = 1
+        # features['numScaredEnemies'] = len(scaredEnemies)
+
+        capsulesDistances = [self.getMazeDistance(
+            myPos, a) for a in self.getCapsules(successor)]
+        if len(capsulesDistances) > 0:
+            features['capsuleDistance'] = min(capsulesDistances)
 
         return features
 
@@ -241,9 +252,12 @@ class OffensiveFeatureAgent(InitialFeatureAgent):
             'successorScore': 100,
             'distanceToFood': -1,
             'numInvaders': -100,
-            'invaderDistance': -10,
-            'numScaredEnemies': 1000,
-            'scaredEnemiesDistance': -50,
+            'invaderDistance': -2,
+            # 'numScaredEnemies': 1000,
+            'enemiesAreScared': 10,
+            'scaredEnemiesDistance': -2,
             # 'teamDistance': 5,
-            'enemyDefenderDistance': 100,
+            'enemyDefenderDistance': -2,
+            'capsuleDistance': -1,
+            'scaredEnemyEatten': 100
         }
