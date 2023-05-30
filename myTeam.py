@@ -1,10 +1,12 @@
 from pacai.core.directions import Directions
 from pacai.agents.capture.capture import CaptureAgent
 # from pacai.util import reflection
+from pacai.core import distance
 
 import logging
 import random
 import time
+
 
 # from pacai.agents.capture.capture import CaptureAgent
 from pacai.util import util
@@ -85,7 +87,7 @@ class InitialFeatureAgent(CaptureAgent):
         stateEval = sum(features[feature] * weights[feature]
                         for feature in features)
 
-        print(stateEval)
+        # print(stateEval)
 
         return stateEval
 
@@ -149,10 +151,19 @@ class DefensiveFeatureAgent(InitialFeatureAgent):
         ) and a.getPosition() is not None]
         features['numInvaders'] = len(invaders)
 
+        # incentivize pacman to stay close to invaders
         if (len(invaders) > 0):
             dists = [self.getMazeDistance(
                 myPos, a.getPosition()) for a in invaders]
-            features['invaderDistance'] = min(dists)
+            features['invaderDistance'] = 1/min(dists)
+
+        # incentivize pacman to stay close to enemies, even when they aren't invading;
+        # should help defense stay in middle as opposed to wander randomly otherwise
+        if (len(enemies) > 0):
+            dists = [self.getMazeDistance(
+                myPos, a.getPosition()) for a in enemies]
+            features['stayCloseToEnemies'] = 1/min(dists)
+
 
         if (action == Directions.STOP):
             features['stop'] = 1
@@ -167,10 +178,11 @@ class DefensiveFeatureAgent(InitialFeatureAgent):
     def getWeights(self, gameState, action):
         return {
             'numInvaders': -1000,
-            'onDefense': 100,
-            'invaderDistance': -10,
+            'onDefense': 20,
+            'invaderDistance': 15,
             'stop': -100,
             'reverse': -2,
+            'stayCloseToEnemies': 10,
             # 'teamDistance': 5,
         }
 
@@ -229,13 +241,26 @@ class OffensiveFeatureAgent(InitialFeatureAgent):
                 features['enemyDefenderDistance'] = (
                     1 / min(enemyDefenderDistances))
 
-        scaredEnemies = [a for a in enemies if a._scaredTimer > 3]
+        scaredEnemies = [a for a in enemies if a._scaredTimer > 1]
+
+        scaredEnemies = [a for a in enemies if a._scaredTimer > 1]
+        # get scared enemies in current state
+        cur_enemies = [gameState.getAgentState(i) for i in self.getOpponents(successor)]  # gets current enemies
+        cur_scared = [a for a in cur_enemies if a._scaredTimer > 1]  # gets current enemies that are scared
+
+        # if the current scared enemies are greater than scared enemies in successor
+        # should check if ghost will be eaten
+        if len(cur_scared) > len(scaredEnemies):  # should essentially check if an enemy is eaten
+            val = features.get('enemiesEaten', 0) + 1  # 0 if not set, 1 if set; set to 1 if no enemy eaten,
+            # increment to 2 if this is 2nd enemy being eaten
+            features['enemiesEaten'] = val
+
         if (len(scaredEnemies) > 0):
             scaredDists = [self.getMazeDistance(myPos, a.getPosition())
                            for a in scaredEnemies]
             features['scaredEnemiesDistance'] = min(scaredDists)
-            if min(scaredDists) == 0:
-                features['scaredEnemyEatten'] = 1
+            # if min(scaredDists) == 0:
+            #     features['scaredEnemyEatten'] = 1
             features['enemyDefenderDistance'] = -10
             features['enemiesAreScared'] = 1
         # features['numScaredEnemies'] = len(scaredEnemies)
@@ -259,5 +284,7 @@ class OffensiveFeatureAgent(InitialFeatureAgent):
             # 'teamDistance': 5,
             'enemyDefenderDistance': -2,
             'capsuleDistance': -1,
-            'scaredEnemyEatten': 100
+            'scaredEnemyEatten': 100,
+            'enemiesEaten': 100,
+
         }
