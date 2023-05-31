@@ -155,7 +155,7 @@ class DefensiveFeatureAgent(InitialFeatureAgent):
         if (len(invaders) > 0):
             dists = [self.getMazeDistance(
                 myPos, a.getPosition()) for a in invaders]
-            features['invaderDistance'] = 1/min(dists)
+            features['invaderDistance'] = 1 / min(dists)
 
         # incentivize pacman to stay close to enemies,
         # even when they aren't invading;
@@ -164,7 +164,7 @@ class DefensiveFeatureAgent(InitialFeatureAgent):
         if (len(enemies) > 0):
             dists = [self.getMazeDistance(
                 myPos, a.getPosition()) for a in enemies]
-            features['stayCloseToEnemies'] = 1/min(dists)
+            features['stayCloseToEnemies'] = 1 / min(dists)
 
         if (action == Directions.STOP):
             features['stop'] = 1
