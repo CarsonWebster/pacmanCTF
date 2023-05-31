@@ -1,7 +1,7 @@
 from pacai.core.directions import Directions
 from pacai.agents.capture.capture import CaptureAgent
 # from pacai.util import reflection
-from pacai.core import distance
+# from pacai.core import distance
 
 import logging
 import random
@@ -157,13 +157,14 @@ class DefensiveFeatureAgent(InitialFeatureAgent):
                 myPos, a.getPosition()) for a in invaders]
             features['invaderDistance'] = 1/min(dists)
 
-        # incentivize pacman to stay close to enemies, even when they aren't invading;
-        # should help defense stay in middle as opposed to wander randomly otherwise
+        # incentivize pacman to stay close to enemies,
+        # even when they aren't invading;
+        # should help defense stay in middle as opposed
+        # to wander randomly otherwise
         if (len(enemies) > 0):
             dists = [self.getMazeDistance(
                 myPos, a.getPosition()) for a in enemies]
             features['stayCloseToEnemies'] = 1/min(dists)
-
 
         if (action == Directions.STOP):
             features['stop'] = 1
@@ -245,13 +246,18 @@ class OffensiveFeatureAgent(InitialFeatureAgent):
 
         scaredEnemies = [a for a in enemies if a._scaredTimer > 1]
         # get scared enemies in current state
-        cur_enemies = [gameState.getAgentState(i) for i in self.getOpponents(successor)]  # gets current enemies
-        cur_scared = [a for a in cur_enemies if a._scaredTimer > 1]  # gets current enemies that are scared
+        cur_enemies = [gameState.getAgentState(
+            i) for i in self.getOpponents(successor)]  # gets current enemies
+        # gets current enemies that are scared
+        cur_scared = [a for a in cur_enemies if a._scaredTimer > 1]
 
-        # if the current scared enemies are greater than scared enemies in successor
+        # if the current scared enemies are greater than
+        # scared enemies in successor
         # should check if ghost will be eaten
-        if len(cur_scared) > len(scaredEnemies):  # should essentially check if an enemy is eaten
-            val = features.get('enemiesEaten', 0) + 1  # 0 if not set, 1 if set; set to 1 if no enemy eaten,
+
+        # 0 if not set, 1 if set; set to 1 if no enemy eaten,
+        if len(cur_scared) > len(scaredEnemies):
+            val = features.get('enemiesEaten', 0) + 1
             # increment to 2 if this is 2nd enemy being eaten
             features['enemiesEaten'] = val
 
