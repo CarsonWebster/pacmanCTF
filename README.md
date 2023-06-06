@@ -12,6 +12,11 @@ Run using
 python3 -m pacai.bin.capture --red pacai.core.baselineTeam --blue pacai.student.myTeam
 ```
 
+test a custom team against another with
+```sh
+python3 -m pacai.bin.capture --red pacai.core.myTeam --blue pacai.student.<other_file>
+```
+
 Latest updates: 
 defensive agent takes into account enemy invader distance to capsule
 
