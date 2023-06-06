@@ -12,7 +12,7 @@ Run using
 python3 -m pacai.bin.capture --red pacai.core.baselineTeam --blue pacai.student.myTeam
 ```
 
-Latest pdates: 
+Latest updates: 
 defensive agent takes into account enemy invader distance to capsule
 
 offensive agent takes into account distance to capsule, scared ghosts, and corners
