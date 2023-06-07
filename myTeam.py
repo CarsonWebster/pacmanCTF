@@ -160,15 +160,6 @@ class paxman(InitialFeatureAgent):
                 min_cap_dist = min(cap_dist, min_cap_dist)
             features['invader2Capsule'] = 1 / min_cap_dist
 
-            # INVADER TO FOOD DISTANCE
-            # min_food_dist = 99999
-            # for i in invaders:
-            #     # print("caps: ", c)
-            #     food_dist = min([distance.manhattan(
-            #         f, i.getPosition()) for f in self.getFoodYouAreDefending(successor).asList()])
-            #     min_food_dist = min(food_dist, min_food_dist)
-            # features['invader2Food'] = 1/min_food_dist
-
         # incentivize pacman to stay close to enemies, even when they aren't invading;
         # should help defense stay in middle as opposed to wander randomly otherwise
         if (len(invaders) == 0):
@@ -185,8 +176,6 @@ class paxman(InitialFeatureAgent):
         if (action == rev):
             features['reverse'] = 1
 
-        # possible additional feat to add:
-            # go berserk when time is low
         return features
 
     def getWeights(self, gameState, action):
@@ -242,7 +231,7 @@ class offensiveAgent(InitialFeatureAgent):
                 features['enemyDefenderDistance'] = (
                     1 / min(enemyDefenderDistances))
 
-            if min(enemyDefenderDistances) < 4:
+            if min(enemyDefenderDistances) < 4 and len(foodList) > 4:
                 # Don't get stuck in a corner
                 walls = gameState.getWalls()
                 x, y = myPos
@@ -268,11 +257,15 @@ class offensiveAgent(InitialFeatureAgent):
             if len(capsulesDistances) > 0:
                 features['capsuleDistance'] = len(enemyDefenders) / min(capsulesDistances)
 
+        if len(self.getCapsules(gameState)) > len(self.getCapsules(successor)):
+            # print("ATE CAPSULE")
+            features['capsuleEaten'] = 1
+
         # get scared enemies in current state:
-        # -gets current enemies
+        #   - gets current enemies
         cur_enemies = [gameState.getAgentState(
             i) for i in self.getOpponents(successor)]
-        # -gets current enemies that are scared
+        #   - gets current enemies that are scared
         cur_scared = [a for a in cur_enemies if a._scaredTimer > 1]
 
         # if the current scared enemies are greater than scared enemies in successor
@@ -286,11 +279,9 @@ class offensiveAgent(InitialFeatureAgent):
             scaredDists = [self.getMazeDistance(myPos, a.getPosition())
                            for a in scaredEnemies]
             features['scaredEnemiesDistance'] = 1 / min(scaredDists)
-            # if min(scaredDists) == 0:
-            #     features['scaredEnemyEatten'] = 1
-            # features['enemyDefenderDistance'] = -10
-            # features['enemiesAreScared'] = 1
-            features['numScaredEnemies'] = len(scaredEnemies)
+
+            # features['numScaredEnemies'] = len(scaredEnemies)
+
         features['onOffense'] = 1
         if (myState.isGhost()):
             features['onOffense'] = 0
@@ -305,25 +296,23 @@ class offensiveAgent(InitialFeatureAgent):
                     myPos, a.getPosition()) for a in invaders]
                 features['invaderDistance'] = 1 / min(invaderDists)
 
+        if (action == Directions.STOP):
+            features['stop'] = 1
+
         return features
 
     def getWeights(self, gameState, action):
         return {
-
             'successorScore': 100,
             'distanceToFood': 10,
             'enemyDefenderDistance': -3,
             'capsuleDistance': 8,
             'wallCount': -100,
             'enemiesEaten': 20,
-            'scaredEnemiesDistance': 7,
-            'invaderDistance': 3,
-            # 'numInvaders': -5,
-            'onOffense': 200,
-            # 'numInvaders': -100,
-            # 'invaderDistance': -2,
-            'numScaredEnemies': -5,
-            # 'enemiesAreScared': 10,
-            # 'scaredEnemiesDistance': 5,
-            # 'enemiesEaten': 100,
+            'scaredEnemiesDistance': 3,
+            'invaderDistance': 2,
+            'onOffense': 50,
+            # 'numScaredEnemies': 10,
+            'capsuleEaten': 50,
+            'stop': -100,
         }
