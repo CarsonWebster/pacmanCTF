@@ -2,7 +2,7 @@ from pacai.core.directions import Directions
 from pacai.agents.capture.capture import CaptureAgent
 # from pacai.core import distanceCalculator
 # from pacai.util import reflection
-from pacai.core import distance
+# from pacai.core import distance
 
 import logging
 import random
@@ -303,7 +303,7 @@ class offensiveAgent(InitialFeatureAgent):
             if (len(invaders) > 0):
                 invaderDists = [self.getMazeDistance(
                     myPos, a.getPosition()) for a in invaders]
-                features['invaderDistance'] = 1/min(invaderDists)
+                features['invaderDistance'] = 1 / min(invaderDists)
 
         return features
 
